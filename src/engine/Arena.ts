@@ -29,6 +29,16 @@ export class Arena {
     return this.cells[this.idx(pos)] !== 0;
   }
 
+  /**
+   * Returns true when the position is occupied by anyone OTHER than ownerId,
+   * or is out of bounds (boundary wall). Used by boost to ignore own trail.
+   */
+  isOccupiedByOther(pos: GridPos, ownerId: number): boolean {
+    if (!this.inBounds(pos)) return true;
+    const v = this.cells[this.idx(pos)];
+    return v !== 0 && v !== ownerId;
+  }
+
   occupy(pos: GridPos, ownerId: number): void {
     if (!this.inBounds(pos)) return;
     this.cells[this.idx(pos)] = ownerId;

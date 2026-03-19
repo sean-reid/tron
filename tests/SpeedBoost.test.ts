@@ -3,47 +3,51 @@ import { Arena } from '../src/engine/Arena';
 import { evaluateBoost } from '../src/systems/SpeedBoost';
 import { CONFIG } from '../src/config';
 
-// Use a larger arena so we have room to manoeuvre
 const arena = () => new Arena(480, 360, 12); // 40×30
+const OWNER = 1;
+const OTHER = 2;
 
 describe('evaluateBoost', () => {
   const r = CONFIG.BOOST_PROXIMITY; // 3
 
   it('returns false in open space', () => {
     const a = arena();
-    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a)).toBe(false);
+    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a, OWNER)).toBe(false);
   });
 
-  it('returns true when trail wall is within proximity to the right', () => {
+  it('returns true when another cycle trail is within proximity', () => {
     const a = arena();
-    // Place wall at x = 20+r = 23
-    a.occupy({ x: 20 + r, y: 15 }, 2);
-    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a)).toBe(true);
+    a.occupy({ x: 20 + r, y: 15 }, OTHER);
+    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a, OWNER)).toBe(true);
   });
 
-  it('returns true when arena boundary is within proximity above', () => {
+  it('ignores own trail — does not boost from cells owned by self', () => {
     const a = arena();
-    // y=0 is boundary; y=r-1 = 2 should trigger boost from y=2 upward
-    expect(evaluateBoost({ x: 20, y: r - 1 }, 'UP', a)).toBe(true);
+    // Own trail one cell behind (the exact scenario that caused always-boosting)
+    a.occupy({ x: 19, y: 15 }, OWNER);
+    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a, OWNER)).toBe(false);
   });
 
-  it('returns true when arena boundary is exactly at proximity distance', () => {
+  it('ignores own trail even within full proximity radius', () => {
     const a = arena();
-    // From y=r-1=2, step r=3 up hits y=-1 which is OOB → isOccupied=true
-    expect(evaluateBoost({ x: 20, y: r - 1 }, 'UP', a)).toBe(true);
+    for (let i = 1; i <= r; i++) a.occupy({ x: 20 - i, y: 15 }, OWNER);
+    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a, OWNER)).toBe(false);
+  });
+
+  it('returns true when arena boundary is within proximity', () => {
+    const a = arena();
+    // From y=r-1=2, step r=3 up hits y=-1 (OOB) → boundary always counts
+    expect(evaluateBoost({ x: 20, y: r - 1 }, 'UP', a, OWNER)).toBe(true);
   });
 
   it('returns false when wall is just beyond proximity', () => {
     const a = arena();
-    // Place wall at exactly r+1 cells away
-    a.occupy({ x: 20 + r + 1, y: 15 }, 2);
-    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a)).toBe(false);
+    a.occupy({ x: 20 + r + 1, y: 15 }, OTHER);
+    expect(evaluateBoost({ x: 20, y: 15 }, 'RIGHT', a, OWNER)).toBe(false);
   });
 
-  it('detects walls in all cardinal directions', () => {
-    const a = arena();
+  it('detects other-owned walls in all cardinal directions', () => {
     const pos = { x: 20, y: 15 };
-    // Test each direction independently
     const dirs = ['UP', 'DOWN', 'LEFT', 'RIGHT'] as const;
     const offsets: Record<string, [number, number]> = {
       UP:    [0, -r],
@@ -54,8 +58,8 @@ describe('evaluateBoost', () => {
     for (const d of dirs) {
       const fresh = arena();
       const [dx, dy] = offsets[d]!;
-      fresh.occupy({ x: pos.x + dx, y: pos.y + dy }, 2);
-      expect(evaluateBoost(pos, d, fresh)).toBe(true);
+      fresh.occupy({ x: pos.x + dx, y: pos.y + dy }, OTHER);
+      expect(evaluateBoost(pos, d, fresh, OWNER)).toBe(true);
     }
   });
 });

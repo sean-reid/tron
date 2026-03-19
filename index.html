@@ -103,16 +103,16 @@
       opacity: 0;
       transition: opacity 0.15s;
       white-space: nowrap;
-    }
-
-    #banner.win {
-      color: #00f0ff;
-      text-shadow: 0 0 15px #00f0ff, 0 0 35px #00f0ff, 0 0 60px #00f0ff88;
+      /* Dark pill keeps text legible over bright neon trails */
+      background: rgba(0, 0, 10, 0.82);
+      padding: 14px 28px;
+      border-radius: 4px;
     }
 
     #banner.lose {
       color: #ff3c00;
-      text-shadow: 0 0 15px #ff3c00, 0 0 35px #ff3c00, 0 0 60px #ff3c0088;
+      text-shadow: 0 0 10px #ff3c00, 0 0 24px #ff3c0099;
+      border: 1px solid #ff3c0044;
     }
 
     #banner.visible { opacity: 1; }

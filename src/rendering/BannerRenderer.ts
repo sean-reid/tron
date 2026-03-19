@@ -6,7 +6,7 @@ export class BannerRenderer {
     this.el = document.getElementById('banner')!;
   }
 
-  show(text: string, type: 'win' | 'lose', durationMs: number): void {
+  show(text: string, type: 'lose', durationMs: number): void {
     if (this.hideTimeout) clearTimeout(this.hideTimeout);
     this.el.textContent = text;
     this.el.className = type;

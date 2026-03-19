@@ -196,7 +196,7 @@ export class GameEngine {
 
     const wasBosting = cycle.boosting;
     cycle.advance(this.arena);
-    cycle.boosting = evaluateBoost(cycle.pos, cycle.dir, this.arena);
+    cycle.boosting = evaluateBoost(cycle.pos, cycle.dir, this.arena, cycle.id);
 
     if (cycle.boosting && !wasBosting) this.audio.playSFX('boost_start');
     if (!cycle.boosting && wasBosting) this.audio.playSFX('boost_end');
