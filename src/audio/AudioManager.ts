@@ -10,11 +10,18 @@ export class AudioManager {
   private musicEnabled = true;
   private initialized = false;
 
-  /** Must be called from a user gesture to unlock AudioContext. */
+  /**
+   * Must be called from a user gesture to unlock AudioContext.
+   * iOS Safari always creates AudioContext in 'suspended' state even inside a
+   * gesture handler, so an explicit resume() is required.
+   */
   init(): void {
     if (this.initialized) return;
     this.initialized = true;
     this.ctx = new AudioContext();
+    // Resume is async but fire-and-forget is fine here; music/sfx nodes will
+    // queue behind the resume and play correctly once the context is running.
+    void this.ctx.resume();
     this.sfx = new SFX(this.ctx);
     this.music = new Music(this.ctx);
     if (this.musicEnabled) this.music.start();
@@ -22,6 +29,8 @@ export class AudioManager {
 
   playSFX(name: SFXName): void {
     if (!this.sfxEnabled || !this.sfx) return;
+    // Re-resume if the context was suspended (e.g. after backgrounding the tab)
+    if (this.ctx?.state === 'suspended') void this.ctx.resume();
     this.sfx.play(name);
   }
 
