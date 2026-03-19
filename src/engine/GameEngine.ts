@@ -69,11 +69,11 @@ export class GameEngine {
     const initAudio = () => {
       this.audio.init();
       window.removeEventListener('keydown', initAudio);
-      this.canvas.removeEventListener('touchstart', initAudio);
+      window.removeEventListener('touchstart', initAudio);
       this.canvas.removeEventListener('click', initAudio);
     };
     window.addEventListener('keydown', initAudio);
-    this.canvas.addEventListener('touchstart', initAudio);
+    window.addEventListener('touchstart', initAudio);
     this.canvas.addEventListener('click', initAudio);
 
     window.addEventListener('resize', () => this.handleResize());
@@ -133,9 +133,7 @@ export class GameEngine {
       if (!cycle.alive) continue;
 
       cycle.tickAccumulator += delta;
-      const tickInterval = cycle.boosting
-        ? CONFIG.TICK_MS / CONFIG.BOOST_MULTIPLIER
-        : CONFIG.TICK_MS;
+      const tickInterval = CONFIG.TICK_MS / (1 + (CONFIG.BOOST_MULTIPLIER - 1) * cycle.boostLevel);
 
       while (cycle.tickAccumulator >= tickInterval) {
         cycle.tickAccumulator -= tickInterval;
@@ -156,11 +154,11 @@ export class GameEngine {
     return all.filter(c => c !== cycle && c.alive).map(c => ({ ...c.pos }));
   }
 
-  private killCycle(cycle: PlayerCycle | BotCycle, now: number): void {
+  private killCycle(cycle: PlayerCycle | BotCycle, now: number, playCrash = true): void {
     this.arena.occupy(cycle.pos, cycle.id);
     cycle.trail.push({ ...cycle.pos });
     cycle.die();
-    this.audio.playSFX('crash');
+    if (playCrash) this.audio.playSFX('crash');
     if (cycle.id === PLAYER_ID) {
       this.handleLoss(now);
     } else {
@@ -189,17 +187,26 @@ export class GameEngine {
       c => c !== cycle && c.alive && c.pos.x === next.x && c.pos.y === next.y,
     );
     if (headOn) {
-      this.killCycle(cycle, now);
-      this.killCycle(headOn, now);
+      this.audio.playSFX('crash');
+      this.killCycle(cycle, now, false);
+      this.killCycle(headOn, now, false);
       return;
     }
 
-    const wasBosting = cycle.boosting;
+    const wasBoosting = cycle.boosting;
     cycle.advance(this.arena);
     cycle.boosting = evaluateBoost(cycle.pos, cycle.dir, this.arena, cycle.id);
 
-    if (cycle.boosting && !wasBosting) this.audio.playSFX('boost_start');
-    if (!cycle.boosting && wasBosting) this.audio.playSFX('boost_end');
+    // Ramp boostLevel toward 0 or 1 over ~6 ticks for smooth speed transition
+    const RAMP_STEP = 1 / 6;
+    cycle.boostLevel = cycle.boosting
+      ? Math.min(1, cycle.boostLevel + RAMP_STEP)
+      : Math.max(0, cycle.boostLevel - RAMP_STEP);
+
+    if (cycle.id === PLAYER_ID) {
+      if (cycle.boosting && !wasBoosting) this.audio.playSFX('boost_start');
+      if (!cycle.boosting && wasBoosting) this.audio.playSFX('boost_end');
+    }
   }
 
   private handleLoss(ts: number): void {
@@ -215,9 +222,7 @@ export class GameEngine {
   private buildSnapshots(): CycleSnapshot[] {
     const allCycles = [this.player, ...this.bots];
     return allCycles.map(cycle => {
-      const tickInterval = cycle.boosting
-        ? CONFIG.TICK_MS / CONFIG.BOOST_MULTIPLIER
-        : CONFIG.TICK_MS;
+      const tickInterval = CONFIG.TICK_MS / (1 + (CONFIG.BOOST_MULTIPLIER - 1) * cycle.boostLevel);
       return cycle.snapshot(tickInterval);
     });
   }

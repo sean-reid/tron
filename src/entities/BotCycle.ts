@@ -61,6 +61,7 @@ export class BotCycle extends Cycle {
     this.trail = [];
     this.alive = true;
     this.boosting = false;
+    this.boostLevel = 0;
     this.tickAccumulator = 0;
     this.commitCooldown = 0;
   }

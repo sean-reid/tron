@@ -18,6 +18,8 @@ export abstract class Cycle {
   trail: GridPos[];
   alive: boolean;
   boosting: boolean;
+  /** 0 = no boost, 1 = full boost. Ramps per tick for smooth speed transition. */
+  boostLevel: number;
 
   /** Accumulates elapsed ms; triggers a tick when >= tickInterval. */
   tickAccumulator: number;
@@ -32,6 +34,7 @@ export abstract class Cycle {
     this.trail = [];
     this.alive = true;
     this.boosting = false;
+    this.boostLevel = 0;
     this.tickAccumulator = 0;
   }
 

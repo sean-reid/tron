@@ -19,9 +19,13 @@ export class AudioManager {
     if (this.initialized) return;
     this.initialized = true;
     this.ctx = new AudioContext();
-    // Resume is async but fire-and-forget is fine here; music/sfx nodes will
-    // queue behind the resume and play correctly once the context is running.
+    // iOS Safari requires both a resume() AND a silent buffer played
+    // synchronously inside the gesture handler to fully unlock WebAudio.
     void this.ctx.resume();
+    const silent = this.ctx.createBufferSource();
+    silent.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+    silent.connect(this.ctx.destination);
+    silent.start(0);
     this.sfx = new SFX(this.ctx);
     this.music = new Music(this.ctx);
     if (this.musicEnabled) this.music.start();

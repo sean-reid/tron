@@ -39,17 +39,31 @@ export class SFX {
 
   private boostStart(): void {
     const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(120, t);
-    osc.frequency.exponentialRampToValueAtTime(320, t + 0.15);
+    const dur = 0.55;
+
+    // Low sine layer — rises slowly from sub-bass to mid
+    const osc1 = this.ctx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(80, t);
+    osc1.frequency.exponentialRampToValueAtTime(220, t + dur);
+
+    // High triangle layer — rises faster, gives the "whoosh" edge
+    const osc2 = this.ctx.createOscillator();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(180, t);
+    osc2.frequency.exponentialRampToValueAtTime(520, t + dur * 0.7);
+
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.25, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    osc.connect(gain);
+    gain.gain.setValueAtTime(0.001, t);
+    gain.gain.linearRampToValueAtTime(0.22, t + dur * 0.35); // ramp up
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);  // fade out
+
+    osc1.connect(gain);
+    osc2.connect(gain);
     gain.connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.2);
+
+    osc1.start(t); osc1.stop(t + dur);
+    osc2.start(t); osc2.stop(t + dur);
   }
 
   private boostEnd(): void {
