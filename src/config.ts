@@ -1,0 +1,18 @@
+export const CONFIG = {
+  CELL_SIZE: 12,
+  TICK_MS: 110,
+  BOOST_MULTIPLIER: 1.7,
+  BOOST_PROXIMITY: 3,
+  BOOST_PULSE_HZ: 6,
+  BOT_CELLS_PER_BOT: 700,
+  BOT_RESPAWN_DELAY_MS: 2000,
+  LOSE_PAUSE_MS: 900,
+  BOT_COMMIT_COOLDOWN_TICKS: 1,
+  MIN_SPAWN_DISTANCE: 12,
+  COLORS: {
+    PLAYER: '#00f0ff',
+    BOTS: ['#ff3c00', '#ff00c8', '#aaff00', '#ff9900', '#cc44ff'],
+    ARENA_BG: '#000010',
+    GRID_LINE: '#080820',
+  },
+} as const;
