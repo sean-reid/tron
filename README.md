@@ -2,7 +2,7 @@
 
 Browser-based TRON lightcycle game. One human player vs bots. No server required.
 
-**[Play it →](https://seanreid.github.io/tron/)**
+**[Play it →](https://sean-reid.github.io/tron/)**
 
 ## Controls
 
