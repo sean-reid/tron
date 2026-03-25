@@ -2,10 +2,34 @@ import type { Arena } from '../engine/Arena';
 import { CONFIG } from '../config';
 
 export class ArenaRenderer {
-  draw(ctx: CanvasRenderingContext2D, arena: Arena, cellSize: number): void {
+  private cache: HTMLCanvasElement | null = null;
+  private cachedCols = 0;
+  private cachedRows = 0;
+
+  /** Returns a cached offscreen canvas with the arena background. Redraws only on resize. */
+  getBackground(arena: Arena, cellSize: number): HTMLCanvasElement {
+    if (this.cache && this.cachedCols === arena.cols && this.cachedRows === arena.rows) {
+      return this.cache;
+    }
+    this.cachedCols = arena.cols;
+    this.cachedRows = arena.rows;
+    this.cache = this.render(arena, cellSize);
+    return this.cache;
+  }
+
+  invalidate(): void {
+    this.cache = null;
+  }
+
+  private render(arena: Arena, cellSize: number): HTMLCanvasElement {
     const { cols, rows } = arena;
     const w = cols * cellSize;
     const h = rows * cellSize;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
 
     // Background
     ctx.fillStyle = CONFIG.COLORS.ARENA_BG;
@@ -32,5 +56,7 @@ export class ArenaRenderer {
     ctx.shadowBlur = 8;
     ctx.strokeRect(1, 1, w - 2, h - 2);
     ctx.shadowBlur = 0;
+
+    return canvas;
   }
 }

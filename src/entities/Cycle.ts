@@ -71,7 +71,7 @@ export abstract class Cycle {
       pos: { ...this.pos },
       prevPos: { ...this.prevPos },
       dir: this.dir,
-      trail: this.trail.map(p => ({ ...p })),
+      trail: this.trail,
       boosting: this.boosting,
       alive: this.alive,
       color: this.color,
