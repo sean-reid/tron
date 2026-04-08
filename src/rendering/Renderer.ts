@@ -27,8 +27,8 @@ export class Renderer {
     if (!ctx) throw new Error('Canvas 2D not supported');
     this.ctx = ctx;
     this.arenaRenderer = new ArenaRenderer();
-    this.cycleRenderer = new CycleRenderer();
     this.sprites = new GlowSpriteCache();
+    this.cycleRenderer = new CycleRenderer(this.sprites);
 
     this.trailCanvas = document.createElement('canvas');
     this.trailCtx = this.trailCanvas.getContext('2d')!;

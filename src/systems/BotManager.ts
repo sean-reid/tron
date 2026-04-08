@@ -37,7 +37,7 @@ export class BotManager {
   private respawnQueue: Map<number, number>;
 
   constructor(arena: Arena) {
-    this.targetCount = Math.max(1, Math.floor(arena.totalCells / CONFIG.BOT_CELLS_PER_BOT));
+    this.targetCount = Math.min(CONFIG.MAX_BOTS, Math.max(1, Math.floor(arena.totalCells / CONFIG.BOT_CELLS_PER_BOT)));
     this.bots = [];
     this.respawnQueue = new Map();
   }

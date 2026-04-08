@@ -38,6 +38,7 @@ export class GameEngine {
   private gameStartTime = 0;
   private lastFrameTs = 0;
   private rafId = 0;
+  private resizeTimer = 0;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -84,7 +85,8 @@ export class GameEngine {
   }
 
   private handleResize(): void {
-    this.initGame();
+    clearTimeout(this.resizeTimer);
+    this.resizeTimer = window.setTimeout(() => this.initGame(), 200);
   }
 
   private initGame(): void {
